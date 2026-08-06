@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Duty Roster System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Layout */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #1e3a8a;
+            font-size: 24px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .admin-btn {
+            background-color: #ffffff;
+            border: 1px solid #1f2937;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .change-pass-btn {
+            background-color: #4b5563;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 4px solid #2563eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h4 {
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-top: 5px;
+        }
+
+        /* Form Card - Admin Only */
+        .form-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #4b5563;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            width: 100%;
+        }
+
+        .btn-add-entry {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            width: 250px;
+            font-size: 13px;
+        }
+
+        /* Table Area */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .admin-col {
+            display: none;
+        }
+
+        /* Trial Banner */
+        .trial-expired-banner {
+            display: none;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>TJ Universal Duty Roster System</h1>
+            <p>Enterprise Multi-Department Platform</p>
+        </div>
+        <div style="text-align: right;">
+            <div class="status-badge" id="subBadge">⏳ Free Trial: 14 Days Left</div>
+            <div class="btn-group">
+                <button class="change-pass-btn" id="changePassBtn" onclick="changeAdminPassword()">🔑 Change Password</button>
+                <button class="admin-btn" id="adminToggleBtn" onclick="toggleAdminMode()">Admin Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trial Expired Warning -->
+    <div class="trial-expired-banner" id="trialBanner">
+        ⚠️ Your 14-Day Free Trial Has Expired! Please contact Admin to unlock full access.
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h4>Total Duties</h4>
+            <div class="number" id="totalDuties">0</div>
+        </div>
+        <div class="stat-card">
+            <h4>Morning Shifts</h4>
+            <div class="number" id="morningCount">0</div>
+        </div>
+        <div class="stat-card">
+            <h4>Evening Shifts</h4>
+            <div class="number" id="eveningCount">0</div>
+        </div>
+        <div class="stat-card">
+            <h4>Night Shifts</h4>
+            <div class="number" id="nightCount">0</div>
+        </div>
+    </div>
+
+    <!-- Admin Form -->
+    <div class="form-card" id="adminForm">
+        <form id="dutyForm" onsubmit="event.preventDefault(); addDutyEntry();">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Emp ID</label>
+                    <input type="text" id="empId" placeholder="e.g. 12328" oninput="autoFillByEmpId()">
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <div style="display: flex; gap: 4px;">
+                        <select id="department" style="flex: 1;"></select>
+                        <button type="button" onclick="addNewDepartment()" style="background-color: #2563eb; color: white; padding: 6px 8px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; white-space: nowrap;">+ Add Dept</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="dutyDate">
+                </div>
+
+                <div class="form-group">
+                    <label>Staff Name</label>
+                    <input type="text" id="staffName">
+                </div>
+
+                <div class="form-group">
+                    <label>Designation</label>
+                    <input type="text" id="designation">
+                </div>
+
+                <div class="form-group">
+                    <label>Shift</label>
+                    <select id="shiftSelect" onchange="autoFillTiming()">
+                        <option value="">Select Shift</option>
+                        <option value="Morning">Morning</option>
+                        <option value="Evening">Evening</option>
+                        <option value="Night">Night</option>
+                        <option value="Off/Leave">Off/Leave</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Timing</label>
+                    <input type="text" id="timing" readonly placeholder="Auto Fill">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-add-entry">+ Add Duty Entry</button>
+        </form>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search...">
+    </div>
+
+    <!-- Table Roster -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Dept</th>
+                    <th>Date</th>
+                    <th>Staff Name</th>
+                    <th>Designation</th>
+                    <th>Shift</th>
+                    <th>Timing</th>
+                    <th class="admin-col">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="rosterTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Universal Enterprise Duty Roster © 2026 | <a href="#">Terms & Conditions</a> | <a href="#">Privacy Policy</a>
+    </div>
+</div>
+
+<script>
+    let defaultDepts = ["General Administration", "Emergency", "ICU", "OPD", "Pediatrics"];
+    let rosterData = JSON.parse(localStorage.getItem('dutyRosterData')) || [];
+    let isAdmin = false;
+
+    function checkTrialStatus() {
+        let trialStartDate = localStorage.getItem('appTrialStartDate');
+        if (!trialStartDate) {
+            trialStartDate = new Date().getTime();
+            localStorage.setItem('appTrialStartDate', trialStartDate);
+        }
+
+        const now = new Date().getTime();
+        const daysPassed = Math.floor((now - trialStartDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = 14 - daysPassed;
+
+        const subBadge = document.getElementById('subBadge');
+        const trialBanner = document.getElementById('trialBanner');
+        let modeText = isAdmin ? " [Admin Active]" : " [Read-Only]";
+
+        if (daysRemaining > 0) {
+            subBadge.innerText = `⏳ Free Trial: ${daysRemaining} Days Left${modeText}`;
+            subBadge.style.backgroundColor = isAdmin ? "#dcfce7" : "#fef3c7";
+            subBadge.style.color = isAdmin ? "#15803d" : "#d97706";
+            subBadge.style.borderColor = isAdmin ? "#86efac" : "#fcd34d";
+            trialBanner.style.display = "none";
+        } else {
+            subBadge.innerText = `❌ Trial Expired${modeText}`;
+            subBadge.style.backgroundColor = "#fee2e2";
+            subBadge.style.color = "#b91c1c";
+            subBadge.style.borderColor = "#fca5a5";
+            trialBanner.style.display = "block";
+        }
+    }
+
+    window.onload = function() {
+        document.getElementById('dutyDate').valueAsDate = new Date();
+        populateDepartments();
+        renderTable();
+        updateStats();
+        checkTrialStatus();
+        updateAdminView();
+    };
+
+    function autoFillByEmpId() {
+        const inputEmpId = document.getElementById('empId').value.trim();
+        if (inputEmpId === "") return;
+
+        const existingEntry = rosterData.slice().reverse().find(item => item.empId && item.empId.toString().trim() === inputEmpId);
+
+        if (existingEntry) {
+            document.getElementById('staffName').value = existingEntry.name || '';
+            document.getElementById('designation').value = existingEntry.designation || '';
+            if (existingEntry.dept) {
+                document.getElementById('department').value = existingEntry.dept;
+            }
+        }
+    }
+
+    function populateDepartments() {
+        const deptSelect = document.getElementById('department');
+        deptSelect.innerHTML = '';
+        let customDepts = JSON.parse(localStorage.getItem('customDepartments')) || [];
+        let allDepts = [...new Set([...defaultDepts, ...customDepts])];
+
+        allDepts.forEach(dept => {
+            let option = document.createElement('option');
+            option.value = dept;
+            option.textContent = dept;
+            deptSelect.appendChild(option);
+        });
+    }
+
+    function addNewDepartment() {
+        let newDept = prompt("Enter New Department Name:");
+        if (newDept && newDept.trim() !== "") {
+            newDept = newDept.trim();
+            let customDepts = JSON.parse(localStorage.getItem('customDepartments')) || [];
+            let allDepts = [...defaultDepts, ...customDepts];
+
+            if (!allDepts.some(d => d.toLowerCase() === newDept.toLowerCase())) {
+                customDepts.push(newDept);
+                localStorage.setItem('customDepartments', JSON.stringify(customDepts));
+                populateDepartments();
+                document.getElementById('department').value = newDept;
+                alert("Department '" + newDept + "' Added Successfully!");
+            } else {
+                alert("This Department already exists!");
+            }
+        }
+    }
+
+    function autoFillTiming() {
+        const shift = document.getElementById('shiftSelect').value;
+        const timingInput = document.getElementById('timing');
+
+        if (shift === "Morning") timingInput.value = "08:00 AM - 04:00 PM";
+        else if (shift === "Evening") timingInput.value = "04:00 PM - 11:00 PM";
+        else if (shift === "Night") timingInput.value = "11:00 PM - 08:00 AM";
+        else if (shift === "Off/Leave") timingInput.value = "OFF";
+        else timingInput.value = "";
+    }
+
+    function addDutyEntry() {
+        const empId = document.getElementById('empId').value || 'N/A';
+        const dept = document.getElementById('department').value;
+        const date = document.getElementById('dutyDate').value;
+        const name = document.getElementById('staffName').value;
+        const designation = document.getElementById('designation').value;
+        const shift = document.getElementById('shiftSelect').value;
+        const timing = document.getElementById('timing').value;
+
+        if (!name || !shift) {
+            alert("Please fill Staff Name and Shift!");
+            return;
+        }
+
+        const entry = { empId, dept, date, name, designation, shift, timing };
+        rosterData.push(entry);
+        localStorage.setItem('dutyRosterData', JSON.stringify(rosterData));
+
+        renderTable();
+        updateStats();
+        
+        document.getElementById('empId').value = '';
+        document.getElementById('staffName').value = '';
+        document.getElementById('designation').value = '';
+        document.getElementById('shiftSelect').value = '';
+        document.getElementById('timing').value = '';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('rosterTableBody');
+        tbody.innerHTML = '';
+
+        rosterData.forEach((item, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.empId}</td>
+                <td>${item.dept}</td>
+                <td>${item.date}</td>
+                <td><b>${item.name}</b></td>
+                <td>${item.designation}</td>
+                <td>${item.shift}</td>
+                <td>${item.timing}</td>
+                <td class="admin-col"><button onclick="deleteEntry(${index})" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        updateAdminView();
+    }
+
+    function deleteEntry(index) {
+        rosterData.splice(index, 1);
+        localStorage.setItem('dutyRosterData', JSON.stringify(rosterData));
+        renderTable();
+        updateStats();
+    }
+
+    function updateStats() {
+        document.getElementById('totalDuties').innerText = rosterData.length;
+        document.getElementById('morningCount').innerText = rosterData.filter(d => d.shift === 'Morning').length;
+        document.getElementById('eveningCount').innerText = rosterData.filter(d => d.shift === 'Evening').length;
+        document.getElementById('nightCount').innerText = rosterData.filter(d => d.shift === 'Night').length;
+    }
+
+    function filterTable() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#rosterTableBody tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    }
+
+    function toggleAdminMode() {
+        let storedPassword = localStorage.getItem('adminPassword') || '12328';
+        
+        if (!isAdmin) {
+            let enteredPass = prompt("Admin Password Darj Karein:");
+            if (enteredPass === storedPassword || enteredPass === 'admin123') {
+                isAdmin = true;
+                alert("Admin Mode Active!");
+            } else if (enteredPass !== null) {
+                alert("Ghalat Password!");
+            }
+        } else {
+            isAdmin = false;
+            alert("Admin Mode Off!");
+        }
+
+        updateAdminView();
+    }
+
+    function changeAdminPassword() {
+        if (!isAdmin) return;
+
+        let currentPass = localStorage.getItem('adminPassword') || '12328';
+        let verifyPass = prompt("Pehle Purana Password Enter Karein:");
+
+        if (verifyPass === currentPass || verifyPass === 'admin123') {
+            let newPass = prompt("Naya Password Enter Karein:");
+            if (newPass && newPass.trim() !== "") {
+                localStorage.setItem('adminPassword', newPass.trim());
+                alert("Password Change Ho Gaya! Naya Password: " + newPass.trim());
+            } else {
+                alert("Password Khali Nahi Ho Sakta!");
+            }
+        } else if (verifyPass !== null) {
+            alert("Purana Password Ghalat Hai!");
+        }
+    }
+
+    function updateAdminView() {
+        const adminCols = document.querySelectorAll('.admin-col');
+        const changePassBtn = document.getElementById('changePassBtn');
+        
+        checkTrialStatus();
+
+        if (isAdmin) {
+            document.getElementById('adminForm').style.display = 'block';
+            document.getElementById('adminToggleBtn').innerText = 'Exit Admin Mode';
+            changePassBtn.style.display = 'inline-block';
+            adminCols.forEach(col => col.style.display = 'table-cell');
+        } else {
+            document.getElementById('adminForm').style.display = 'none';
+            document.getElementById('adminToggleBtn').innerText = 'Admin Login';
+            changePassBtn.style.display = 'none';
+            adminCols.forEach(col => col.style.display = 'none');
+        }
+    }
+</script>
+
+</body>
+</html>
